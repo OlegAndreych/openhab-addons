@@ -306,6 +306,7 @@
     <module>org.openhab.binding.pushover</module>
     <module>org.openhab.binding.pushsafer</module>
     <module>org.openhab.binding.qbus</module>
+    <module>org.openhab.binding.qingping</module>
     <module>org.openhab.binding.qolsysiq</module>
     <module>org.openhab.binding.radiothermostat</module>
     <module>org.openhab.binding.regoheatpump</module>
@@ -543,8 +544,10 @@
               <configuration>
                 <descriptors combine.children="append">
                   <!-- Apache Karaf -->
-                  <descriptor>mvn:org.apache.karaf.features/framework/${karaf.version}/xml/features</descriptor>
-                  <descriptor>mvn:org.apache.karaf.features/standard/${karaf.version}/xml/features</descriptor>
+                  <descriptor>mvn:org.apache.karaf.features/framework/${karaf.version}/xml/features
+                  </descriptor>
+                  <descriptor>mvn:org.apache.karaf.features/standard/${karaf.version}/xml/features
+                  </descriptor>
                   <!-- Current feature under verification -->
                   <descriptor>file:${project.build.directory}/feature/feature.xml</descriptor>
                 </descriptors>
@@ -602,7 +605,8 @@
               <includeScope>runtime</includeScope>
               <includeTypes>jar</includeTypes>
               <excludes>**/module-info.class</excludes>
-              <excludeGroupIds>javax.activation,org.apache.karaf.features,org.lastnpe.eea</excludeGroupIds>
+              <excludeGroupIds>javax.activation,org.apache.karaf.features,org.lastnpe.eea
+              </excludeGroupIds>
               <excludeArtifactIds>${dep.noembedding}</excludeArtifactIds>
               <outputDirectory>${project.build.directory}/classes</outputDirectory>
               <overWriteReleases>true</overWriteReleases>

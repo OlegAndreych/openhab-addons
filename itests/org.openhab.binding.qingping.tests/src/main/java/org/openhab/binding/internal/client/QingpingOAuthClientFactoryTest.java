@@ -33,7 +33,7 @@ public class QingpingOAuthClientFactoryTest extends JavaOSGiTest {
             properties = new Properties();
             properties.load(propertiesStream);
         }
-        // TODO: убрать свои креды в проперти
+
         try (OAuthClientService oAuthClientService = qingpingOAuthClientFactory
                 .createInstance(properties.getProperty("app.key"), properties.getProperty("app.secret"))) {
             final AccessTokenResponse accessTokenResponse = oAuthClientService.getAccessTokenByClientCredentials(null);

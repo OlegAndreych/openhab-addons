@@ -12,9 +12,7 @@
  */
 package org.openhab.binding.qingping.internal;
 
-import static org.openhab.binding.qingping.internal.QingpingBindingConstants.APP_KEY_PARAMETER;
-import static org.openhab.binding.qingping.internal.QingpingBindingConstants.APP_SECRET_PARAMETER;
-import static org.openhab.binding.qingping.internal.QingpingBindingConstants.THING_TYPE_AIR_MONITOR;
+import static org.openhab.binding.qingping.internal.QingpingBindingConstants.*;
 
 import java.util.Map;
 import java.util.Set;
@@ -22,8 +20,8 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpClient;
-import org.openhab.binding.qingping.internal.client.QingpingOAuthClientFactory;
-import org.openhab.core.auth.client.oauth2.OAuthClientService;
+import org.openhab.binding.qingping.internal.client.http.QingpingOAuthClientFactory;
+import org.openhab.binding.qingping.internal.client.http.QingpingOAuthClientService;
 import org.openhab.core.auth.client.oauth2.OAuthFactory;
 import org.openhab.core.io.net.http.HttpClientFactory;
 import org.openhab.core.thing.Thing;
@@ -48,7 +46,7 @@ public class QingpingHandlerFactory extends BaseThingHandlerFactory {
 
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set.of(THING_TYPE_AIR_MONITOR);
     private final HttpClient httpClient;
-    private final OAuthClientService oAuthClientService;
+    private final QingpingOAuthClientService oAuthClientService;
 
     @Activate
     public QingpingHandlerFactory(@Reference HttpClientFactory httpClientFactory, @Reference OAuthFactory oAuthFactory,

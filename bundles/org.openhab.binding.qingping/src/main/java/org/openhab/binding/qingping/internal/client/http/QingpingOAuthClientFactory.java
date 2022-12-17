@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.qingping.internal.client;
+package org.openhab.binding.qingping.internal.client.http;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.auth.client.oauth2.OAuthClientService;
@@ -25,8 +25,9 @@ public class QingpingOAuthClientFactory {
         this.oAuthFactory = oAuthFactory;
     }
 
-    public OAuthClientService createInstance(String clientID, @Nullable String clientSecret) {
-        return oAuthFactory.createOAuthClientService(this.getClass().getName(), ACCESS_TOKEN_URL, null, clientID,
-                clientSecret, OAUTH_SCOPE, true);
+    public QingpingOAuthClientService createInstance(String clientID, @Nullable String clientSecret) {
+        final OAuthClientService oAuthClientService = oAuthFactory.createOAuthClientService(this.getClass().getName(),
+                ACCESS_TOKEN_URL, null, clientID, clientSecret, OAUTH_SCOPE, true);
+        return new QingpingOAuthClientService(oAuthClientService);
     }
 }

@@ -13,4 +13,23 @@
   <artifactId>org.openhab.binding.qingping</artifactId>
 
   <name>openHAB Add-ons :: Bundles :: Qingping Binding</name>
+
+  <properties>
+    <dep.noembedding>jackson-core,jackson-annotations,jackson-databind</dep.noembedding>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${jackson.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
 </project>

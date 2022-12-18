@@ -20,7 +20,10 @@ import org.openhab.core.storage.StorageService;
 import org.openhab.core.test.java.JavaOSGiTest;
 import org.openhab.core.test.storage.VolatileStorageService;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class QingpingHTTPInteractionsTest extends JavaOSGiTest {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final StorageService storageService = new VolatileStorageService();
     private HttpClientFactory httpClientFactory;
     private QingpingOAuthClientService oAuthClientService;
@@ -56,7 +59,8 @@ public class QingpingHTTPInteractionsTest extends JavaOSGiTest {
     @Test
     void shouldNotFailOnListingDevices() throws QingpingServiceInteractionException {
         final HttpClient httpClient = httpClientFactory.getCommonHttpClient();
-        final QingpingHttpClient qingpingHttpClient = new QingpingHttpClient(httpClient, oAuthClientService);
+        final QingpingHttpClient qingpingHttpClient = new QingpingHttpClient(OBJECT_MAPPER, httpClient,
+                oAuthClientService);
         qingpingHttpClient.listDevices();
     }
 }

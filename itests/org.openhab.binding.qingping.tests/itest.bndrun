@@ -72,4 +72,7 @@ Fragment-Host: org.openhab.binding.qingping
 	org.eclipse.jetty.websocket.client;version='[9.4.46,9.4.47)',\
 	org.eclipse.jetty.websocket.common;version='[9.4.46,9.4.47)',\
 	org.osgi.service.cm;version='[1.6.0,1.6.1)',\
-	biz.aQute.tester.junit-platform;version='[6.4.0,6.4.1)'
+	biz.aQute.tester.junit-platform;version='[6.4.0,6.4.1)',\
+	com.fasterxml.jackson.core.jackson-annotations;version='[2.12.7,2.12.8)',\
+	com.fasterxml.jackson.core.jackson-core;version='[2.12.7,2.12.8)',\
+	com.fasterxml.jackson.core.jackson-databind;version='[2.12.7,2.12.8)'

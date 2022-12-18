@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <thing:thing-descriptions bindingId="qingping"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
-	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+						  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+						  xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+						  xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
 
 	<thing-type id="air-monitor">
 		<label>Qingping Air Monitor</label>
@@ -17,6 +17,7 @@
 			<channel id="tvoc" typeId="tvoc"/>
 			<channel id="co2" typeId="co2"/>
 			<channel id="pm25" typeId="pm25"/>
+			<channel id="pm10" typeId="pm10"/>
 		</channels>
 
 		<properties>
@@ -63,6 +64,14 @@
 		<item-type>Number:Density</item-type>
 		<label>PM 2.5</label>
 		<description>PM 2.5</description>
+		<category>Number</category>
+		<state readOnly="true" pattern="%d µg/m³" min="0"/>
+	</channel-type>
+
+	<channel-type id="pm10">
+		<item-type>Number:Density</item-type>
+		<label>PM 10</label>
+		<description>PM 10</description>
 		<category>Number</category>
 		<state readOnly="true" pattern="%d µg/m³" min="0"/>
 	</channel-type>

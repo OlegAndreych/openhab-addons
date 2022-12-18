@@ -1,0 +1,102 @@
+{
+  "total": 2,
+  "devices": [
+    {
+      "info": {
+        "mac": "582D3400C123",
+        "product": {
+          "id": 1201,
+          "code": "CGS1",
+          "name": "青萍空气检测仪",
+          "en_name": "Qingping Air Monitor",
+          "noBleSetting": false
+        },
+        "name": "Living-room Air Monitor",
+        "version": "4.1.8_0256",
+        "created_at": 1663522182,
+        "group_id": 0,
+        "group_name": "",
+        "status": {
+          "offline": false
+        },
+        "setting": {
+          "report_interval": 60,
+          "collect_interval": 30
+        }
+      },
+      "data": {
+        "timestamp": {
+          "value": 1671357161
+        },
+        "battery": {
+          "value": 100
+        },
+        "temperature": {
+          "value": 24.799999237060547
+        },
+        "humidity": {
+          "value": 32.400001525878906
+        },
+        "tvoc": {
+          "value": 363
+        },
+        "co2": {
+          "value": 673
+        },
+        "pm25": {
+          "value": 7
+        },
+        "pm10": {
+          "value": 4
+        }
+      }
+    },
+    {
+      "info": {
+        "mac": "582D3400E321",
+        "product": {
+          "id": 1201,
+          "code": "CGS1",
+          "name": "青萍空气检测仪",
+          "en_name": "Qingping Air Monitor",
+          "noBleSetting": false
+        },
+        "name": "Bedroom Air Monitor",
+        "version": "4.1.8_0256",
+        "created_at": 1664822996,
+        "group_id": 0,
+        "group_name": "",
+        "status": {
+          "offline": false
+        },
+        "setting": {}
+      },
+      "data": {
+        "timestamp": {
+          "value": 1671356700
+        },
+        "battery": {
+          "value": 100
+        },
+        "temperature": {
+          "value": 24.899999618530273
+        },
+        "humidity": {
+          "value": 35.5
+        },
+        "tvoc": {
+          "value": 385
+        },
+        "co2": {
+          "value": 697
+        },
+        "pm25": {
+          "value": 0
+        },
+        "pm10": {
+          "value": 0
+        }
+      }
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 package org.openhab.binding.internal.client.http;
 
+import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.IOException;
@@ -33,7 +34,8 @@ public class QingpingHTTPInteractionsTest extends JavaOSGiTest {
         registerService(storageService);
         final OAuthFactory oAuthFactory = getService(OAuthFactory.class);
         httpClientFactory = getService(HttpClientFactory.class);
-        QingpingOAuthClientFactory qingpingOAuthClientFactory = new QingpingOAuthClientFactory(oAuthFactory);
+        final OAuthFactory nonNullOAuthFactory = requireNonNull(oAuthFactory, "OAuthFactory service must be present.");
+        QingpingOAuthClientFactory qingpingOAuthClientFactory = new QingpingOAuthClientFactory(nonNullOAuthFactory);
 
         final Properties properties = loadTestProperties();
         oAuthClientService = qingpingOAuthClientFactory.createInstance(properties.getProperty("app.key"),

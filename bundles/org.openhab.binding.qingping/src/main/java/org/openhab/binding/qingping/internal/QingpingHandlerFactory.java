@@ -46,7 +46,7 @@ public class QingpingHandlerFactory extends BaseThingHandlerFactory {
 
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set.of(THING_TYPE_AIR_MONITOR);
     private final HttpClient httpClient;
-    private final QingpingOAuthClientService oAuthClientService;
+    private final @Nullable QingpingOAuthClientService oAuthClientService;
 
     @Activate
     public QingpingHandlerFactory(@Reference HttpClientFactory httpClientFactory, @Reference OAuthFactory oAuthFactory,
@@ -55,8 +55,15 @@ public class QingpingHandlerFactory extends BaseThingHandlerFactory {
         this.httpClient = httpClientFactory.getCommonHttpClient();
 
         final QingpingOAuthClientFactory qingpingOAuthClientFactory = new QingpingOAuthClientFactory(oAuthFactory);
-        this.oAuthClientService = qingpingOAuthClientFactory.createInstance((String) properties.get(APP_KEY_PARAMETER),
-                (String) properties.get(APP_SECRET_PARAMETER));
+
+        final String appKey = (String) properties.get(APP_KEY_PARAMETER);
+        final String appSecret = (String) properties.get(APP_SECRET_PARAMETER);
+
+        if (appKey == null || appSecret == null) {
+            this.oAuthClientService = null;
+        } else {
+            this.oAuthClientService = qingpingOAuthClientFactory.createInstance(appKey, appSecret);
+        }
     }
 
     @Deactivate

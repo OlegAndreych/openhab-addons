@@ -30,8 +30,6 @@ import org.openhab.core.thing.binding.ThingHandlerFactory;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -44,8 +42,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @NonNullByDefault
 @Component(configurationPid = "binding.qingping", service = ThingHandlerFactory.class)
 public class QingpingHandlerFactory extends BaseThingHandlerFactory {
-
-    private final Logger logger = LoggerFactory.getLogger(QingpingHandlerFactory.class);
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set.of(THING_TYPE_AIR_MONITOR);
     private final QingpingHttpClient qingpingHttpClient;
 

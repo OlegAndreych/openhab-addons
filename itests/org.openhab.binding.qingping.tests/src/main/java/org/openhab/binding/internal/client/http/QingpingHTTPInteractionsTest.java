@@ -1,25 +1,31 @@
 package org.openhab.binding.internal.client.http;
 
-import static java.util.Objects.requireNonNull;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Hashtable;
+import java.util.Map;
 import java.util.Properties;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openhab.binding.qingping.internal.QingpingBindingConstants;
 import org.openhab.binding.qingping.internal.client.http.QingpingHttpClient;
-import org.openhab.binding.qingping.internal.client.http.QingpingOAuthClientFactory;
+import org.openhab.binding.qingping.internal.client.http.QingpingOAuthClientProvider;
 import org.openhab.binding.qingping.internal.client.http.QingpingOAuthClientService;
 import org.openhab.binding.qingping.internal.client.http.QingpingServiceInteractionException;
-import org.openhab.core.auth.client.oauth2.OAuthFactory;
 import org.openhab.core.io.net.http.HttpClientFactory;
 import org.openhab.core.storage.StorageService;
 import org.openhab.core.test.java.JavaOSGiTest;
 import org.openhab.core.test.storage.VolatileStorageService;
+import org.osgi.service.cm.Configuration;
+import org.osgi.service.cm.ConfigurationAdmin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -31,19 +37,27 @@ public class QingpingHTTPInteractionsTest extends JavaOSGiTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        registerService(storageService);
-        final OAuthFactory oAuthFactory = getService(OAuthFactory.class);
-        httpClientFactory = getService(HttpClientFactory.class);
-        final OAuthFactory nonNullOAuthFactory = requireNonNull(oAuthFactory, "OAuthFactory service must be present.");
-        QingpingOAuthClientFactory qingpingOAuthClientFactory = new QingpingOAuthClientFactory(nonNullOAuthFactory);
+        final ConfigurationAdmin configurationAdmin = getService(ConfigurationAdmin.class);
+        assertThat(configurationAdmin, is(notNullValue()));
+        final Configuration configuration = configurationAdmin.getConfiguration("binding.qingping");
 
         final Properties properties = loadTestProperties();
-        oAuthClientService = qingpingOAuthClientFactory.createInstance(properties.getProperty("app.key"),
-                properties.getProperty("app.secret"));
+        final Hashtable<String, String> configData = new Hashtable<>(
+                Map.of(QingpingBindingConstants.APP_KEY_PARAMETER, properties.getProperty("app.key"),
+                        QingpingBindingConstants.APP_SECRET_PARAMETER, properties.getProperty("app.secret")));
+
+        configuration.update(configData);
+
+        registerService(storageService);
+        final QingpingOAuthClientProvider qingpingOAuthClientProvider = getService(QingpingOAuthClientProvider.class);
+        assertThat(qingpingOAuthClientProvider, is(notNullValue()));
+        this.httpClientFactory = getService(HttpClientFactory.class);
+
+        this.oAuthClientService = qingpingOAuthClientProvider.getInstance();
     }
 
     @AfterEach
-    void tearDown() {
+    void tearDown() throws Exception {
         oAuthClientService.close();
     }
 

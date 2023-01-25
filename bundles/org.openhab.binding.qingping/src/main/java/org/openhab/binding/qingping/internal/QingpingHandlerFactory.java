@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2022 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -12,17 +12,15 @@
  */
 package org.openhab.binding.qingping.internal;
 
-import static org.openhab.binding.qingping.internal.QingpingBindingConstants.*;
+import static org.openhab.binding.qingping.internal.QingpingBindingConstants.THING_TYPE_AIR_MONITOR;
 
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jetty.client.HttpClient;
-import org.openhab.binding.qingping.internal.client.http.QingpingOAuthClientFactory;
+import org.openhab.binding.qingping.internal.client.http.QingpingHttpClient;
+import org.openhab.binding.qingping.internal.client.http.QingpingOAuthClientProvider;
 import org.openhab.binding.qingping.internal.client.http.QingpingOAuthClientService;
-import org.openhab.core.auth.client.oauth2.OAuthFactory;
 import org.openhab.core.io.net.http.HttpClientFactory;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
@@ -31,8 +29,11 @@ import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.core.thing.binding.ThingHandlerFactory;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The {@link QingpingHandlerFactory} is responsible for creating things and thing
@@ -44,30 +45,18 @@ import org.osgi.service.component.annotations.Reference;
 @Component(configurationPid = "binding.qingping", service = ThingHandlerFactory.class)
 public class QingpingHandlerFactory extends BaseThingHandlerFactory {
 
+    private final Logger logger = LoggerFactory.getLogger(QingpingHandlerFactory.class);
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set.of(THING_TYPE_AIR_MONITOR);
-    private final HttpClient httpClient;
-    private final @Nullable QingpingOAuthClientService oAuthClientService;
+    private final QingpingHttpClient qingpingHttpClient;
 
     @Activate
-    public QingpingHandlerFactory(@Reference HttpClientFactory httpClientFactory, @Reference OAuthFactory oAuthFactory,
-            Map<String, ?> properties) {
+    public QingpingHandlerFactory(@Reference HttpClientFactory httpClientFactory,
+            @Reference QingpingOAuthClientProvider oauthClientFactory) {
 
-        this.httpClient = httpClientFactory.getCommonHttpClient();
-
-        final QingpingOAuthClientFactory qingpingOAuthClientFactory = new QingpingOAuthClientFactory(oAuthFactory);
-
-        final String appKey = (String) properties.get(APP_KEY_PARAMETER);
-        final String appSecret = (String) properties.get(APP_SECRET_PARAMETER);
-
-        if (appKey == null || appSecret == null) {
-            this.oAuthClientService = null;
-        } else {
-            this.oAuthClientService = qingpingOAuthClientFactory.createInstance(appKey, appSecret);
-        }
-    }
-
-    @Deactivate
-    void deactivate() {
+        final QingpingOAuthClientService qingpingOAuthClientService = oauthClientFactory.getInstance();
+        final ObjectMapper mapper = new ObjectMapper();
+        this.qingpingHttpClient = new QingpingHttpClient(mapper, httpClientFactory.getCommonHttpClient(),
+                qingpingOAuthClientService);
     }
 
     @Override

@@ -65,7 +65,7 @@ public class QingpingHandlerFactory extends BaseThingHandlerFactory {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
         if (THING_TYPE_AIR_MONITOR.equals(thingTypeUID)) {
-            return new AirMonitorHandler(thing);
+            return new AirMonitorHandler(thing, qingpingHttpClient);
         }
 
         return null;

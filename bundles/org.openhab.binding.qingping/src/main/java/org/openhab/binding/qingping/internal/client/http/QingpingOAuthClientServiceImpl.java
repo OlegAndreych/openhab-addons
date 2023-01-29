@@ -6,6 +6,8 @@ import org.openhab.core.auth.client.oauth2.AccessTokenResponse;
 import org.openhab.core.auth.client.oauth2.OAuthClientService;
 import org.openhab.core.auth.client.oauth2.OAuthException;
 import org.openhab.core.auth.client.oauth2.OAuthResponseException;
+import org.openhab.core.thing.ThingStatus;
+import org.openhab.core.thing.ThingStatusDetail;
 
 public class QingpingOAuthClientServiceImpl implements QingpingOAuthClientService {
 
@@ -22,7 +24,7 @@ public class QingpingOAuthClientServiceImpl implements QingpingOAuthClientServic
             return oAuthTokenResponse.getAccessToken();
         } catch (OAuthException | IOException | OAuthResponseException e) {
             throw new QingpingServiceInteractionException("Error while getting an oAuth token for the Qingping API.",
-                    e);
+                    ThingStatus.ONLINE, ThingStatusDetail.COMMUNICATION_ERROR, e);
         }
     }
 

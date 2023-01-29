@@ -10,6 +10,8 @@ import java.util.concurrent.TimeoutException;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.openhab.binding.qingping.internal.client.http.dto.device.list.DeviceListResponse;
+import org.openhab.core.thing.ThingStatus;
+import org.openhab.core.thing.ThingStatusDetail;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -40,13 +42,15 @@ public class QingpingHttpClient {
                     .method(GET).send();
         } catch (InterruptedException | TimeoutException | ExecutionException e) {
             throw new QingpingServiceInteractionException(
-                    "There's an error while getting devices list from the Qingping API.", e);
+                    "There's an error while getting devices list from the Qingping API.", ThingStatus.ONLINE,
+                    ThingStatusDetail.COMMUNICATION_ERROR, e);
         }
 
         try {
             return objectMapper.readValue(response.getContent(), DeviceListResponse.class);
         } catch (IOException e) {
-            throw new QingpingServiceInteractionException("Cannot parse response from Qingping API service.", e);
+            throw new QingpingServiceInteractionException("Cannot parse response from Qingping API service.",
+                    ThingStatus.ONLINE, ThingStatusDetail.COMMUNICATION_ERROR, e);
         }
     }
 }

@@ -22,6 +22,8 @@ import java.util.Objects;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.auth.client.oauth2.OAuthClientService;
 import org.openhab.core.auth.client.oauth2.OAuthFactory;
+import org.openhab.core.thing.ThingStatus;
+import org.openhab.core.thing.ThingStatusDetail;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.annotations.Activate;
@@ -59,7 +61,8 @@ public class QingpingOAuthClientProvider {
 
     private QingpingOAuthClientService createInstance() {
         if (appKey == null || appSecret == null) {
-            return new QingpingOAuthClientServiceStub("OAuth credentials are not provided.");
+            return new QingpingOAuthClientServiceStub("OAuth credentials are not provided.", ThingStatus.OFFLINE,
+                    ThingStatusDetail.CONFIGURATION_ERROR);
         }
 
         final OAuthClientService oAuthClientService;

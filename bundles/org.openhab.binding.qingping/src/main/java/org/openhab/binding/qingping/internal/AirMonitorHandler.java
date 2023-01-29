@@ -16,6 +16,7 @@ import static org.openhab.binding.qingping.internal.QingpingBindingConstants.BAT
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.qingping.internal.client.http.QingpingHttpClient;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
@@ -31,9 +32,11 @@ public class AirMonitorHandler extends BaseThingHandler {
     private final Logger logger = LoggerFactory.getLogger(AirMonitorHandler.class);
 
     private @Nullable QingpingConfiguration config;
+    private final QingpingHttpClient qingpingHttpClient;
 
-    public AirMonitorHandler(Thing thing) {
+    public AirMonitorHandler(Thing thing, QingpingHttpClient qingpingHttpClient) {
         super(thing);
+        this.qingpingHttpClient = qingpingHttpClient;
     }
 
     @Override

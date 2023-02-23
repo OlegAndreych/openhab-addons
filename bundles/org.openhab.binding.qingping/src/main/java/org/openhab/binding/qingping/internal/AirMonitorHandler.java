@@ -12,11 +12,20 @@
  */
 package org.openhab.binding.qingping.internal;
 
-import static org.openhab.binding.qingping.internal.QingpingBindingConstants.BATTERY_CHANNEL;
+import static java.util.Objects.requireNonNull;
+import static org.openhab.binding.qingping.internal.QingpingBindingConstants.*;
+
+import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.binding.qingping.internal.client.http.QingpingHttpClient;
+import org.openhab.binding.qingping.internal.client.http.QingpingClient;
+import org.openhab.binding.qingping.internal.client.http.dto.device.list.Device;
+import org.openhab.binding.qingping.internal.client.http.dto.device.list.data.DeviceData;
+import org.openhab.binding.qingping.internal.sync.QingpingThingsStateUpdater;
+import org.openhab.binding.qingping.internal.sync.SynchronizationRegistrationData;
+import org.openhab.core.library.types.DecimalType;
+import org.openhab.core.library.types.PercentType;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
@@ -32,11 +41,15 @@ public class AirMonitorHandler extends BaseThingHandler {
     private final Logger logger = LoggerFactory.getLogger(AirMonitorHandler.class);
 
     private @Nullable QingpingConfiguration config;
-    private final QingpingHttpClient qingpingHttpClient;
+    private final QingpingClient qingpingClient;
+    private final QingpingThingsStateUpdater qingpingThingsStateUpdater;
+    private Runnable registrationHandle;
 
-    public AirMonitorHandler(Thing thing, QingpingHttpClient qingpingHttpClient) {
+    public AirMonitorHandler(Thing thing, QingpingClient qingpingClient,
+            QingpingThingsStateUpdater qingpingThingsStateUpdater) {
         super(thing);
-        this.qingpingHttpClient = qingpingHttpClient;
+        this.qingpingClient = qingpingClient;
+        this.qingpingThingsStateUpdater = qingpingThingsStateUpdater;
     }
 
     @Override
@@ -73,29 +86,28 @@ public class AirMonitorHandler extends BaseThingHandler {
         // we set this upfront to reliably check status updates in unit tests.
         updateStatus(ThingStatus.UNKNOWN);
 
-        // Example for background initialization:
-        scheduler.execute(() -> {
-            boolean thingReachable = true; // <background task with long running initialization here>
-            // when done do:
-            if (thingReachable) {
-                updateStatus(ThingStatus.ONLINE);
-            } else {
-                updateStatus(ThingStatus.OFFLINE);
-            }
-        });
+        final Map<String, String> properties = thing.getProperties();
+        final String mac = properties.get(MAC_PROPERTY_NAME);
+        requireNonNull(mac, "MAC property value must be present for an Air Monitor thing.");
+        registrationHandle = qingpingThingsStateUpdater
+                .register(new SynchronizationRegistrationData(mac, this::applyNewState));
+    }
 
-        // These logging types should be primarily used by bindings
-        // logger.trace("Example trace message");
-        // logger.debug("Example debug message");
-        // logger.warn("Example warn message");
-        //
-        // Logging to INFO should be avoided normally.
-        // See https://www.openhab.org/docs/developer/guidelines.html#f-logging
+    private void applyNewState(Device device) {
+        updateStatus(ThingStatus.ONLINE);
+        final DeviceData data = device.getData();
+        updateState(BATTERY_CHANNEL, new PercentType(data.getBattery().getValue()));
+        updateState(TEMPERATURE_CHANNEL, new DecimalType(data.getTemperature().getValue()));
+        updateState(HUMIDITY_CHANNEL, new PercentType(data.getHumidity().getValue()));
+        updateState(TVOC_CHANNEL, new PercentType(data.getTvoc().getValue()));
+        updateState(CO2_CHANNEL, new DecimalType(data.getCo2().getValue()));
+        updateState(PM25_CHANNEL, new DecimalType(data.getPm25().getValue()));
+        updateState(PM10_CHANNEL, new DecimalType(data.getPm10().getValue()));
+    }
 
-        // Note: When initialization can NOT be done set the status with more details for further
-        // analysis. See also class ThingStatusDetail for all available status details.
-        // Add a description to give user information to understand why thing does not work as expected. E.g.
-        // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-        // "Can not access device as username and/or password are invalid");
+    @Override
+    public void dispose() {
+        registrationHandle.run();
+        super.dispose();
     }
 }

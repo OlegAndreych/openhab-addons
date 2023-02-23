@@ -16,7 +16,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openhab.binding.qingping.internal.QingpingBindingConstants;
-import org.openhab.binding.qingping.internal.client.http.QingpingHttpClient;
+import org.openhab.binding.qingping.internal.client.http.QingpingClient;
 import org.openhab.binding.qingping.internal.client.http.QingpingOAuthClientProvider;
 import org.openhab.binding.qingping.internal.client.http.QingpingOAuthClientService;
 import org.openhab.binding.qingping.internal.client.http.QingpingServiceInteractionException;
@@ -75,8 +75,7 @@ public class QingpingHTTPInteractionsTest extends JavaOSGiTest {
     @Test
     void shouldNotFailOnListingDevices() throws QingpingServiceInteractionException {
         final HttpClient httpClient = httpClientFactory.getCommonHttpClient();
-        final QingpingHttpClient qingpingHttpClient = new QingpingHttpClient(OBJECT_MAPPER, httpClient,
-                oAuthClientService);
-        qingpingHttpClient.listDevices();
+        final QingpingClient qingpingClient = new QingpingClient(OBJECT_MAPPER, httpClient, oAuthClientService);
+        qingpingClient.listDevices();
     }
 }

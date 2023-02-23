@@ -28,6 +28,8 @@ public class QingpingBindingConstants {
     // List of all Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_AIR_MONITOR = new ThingTypeUID(BINDING_ID, "air-monitor");
 
+    public static final String MAC_PROPERTY_NAME = "mac";
+
     // List of all Channel ids
     public static final String BATTERY_CHANNEL = "battery";
     public static final String TEMPERATURE_CHANNEL = "temperature";
@@ -35,6 +37,7 @@ public class QingpingBindingConstants {
     public static final String TVOC_CHANNEL = "tvoc";
     public static final String CO2_CHANNEL = "co2";
     public static final String PM25_CHANNEL = "pm25";
+    public static final String PM10_CHANNEL = "pm10";
 
     // Binding parameters
     public static final String APP_KEY_PARAMETER = "App Key";

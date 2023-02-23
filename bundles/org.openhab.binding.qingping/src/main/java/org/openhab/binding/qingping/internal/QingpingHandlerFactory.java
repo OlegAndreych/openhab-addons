@@ -15,12 +15,15 @@ package org.openhab.binding.qingping.internal;
 import static org.openhab.binding.qingping.internal.QingpingBindingConstants.THING_TYPE_AIR_MONITOR;
 
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.binding.qingping.internal.client.http.QingpingHttpClient;
+import org.openhab.binding.qingping.internal.client.http.QingpingClient;
 import org.openhab.binding.qingping.internal.client.http.QingpingOAuthClientProvider;
 import org.openhab.binding.qingping.internal.client.http.QingpingOAuthClientService;
+import org.openhab.binding.qingping.internal.sync.QingpingThingsStateUpdater;
+import org.openhab.core.common.ThreadPoolManager;
 import org.openhab.core.io.net.http.HttpClientFactory;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
@@ -43,7 +46,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component(configurationPid = "binding.qingping", service = ThingHandlerFactory.class)
 public class QingpingHandlerFactory extends BaseThingHandlerFactory {
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set.of(THING_TYPE_AIR_MONITOR);
-    private final QingpingHttpClient qingpingHttpClient;
+    private static final String SCHEDULED_POOL_NAME = "QingpingSynchronizerPool";
+
+    private final QingpingClient qingpingClient;
+    private final QingpingThingsStateUpdater qingpingThingsStateUpdater;
 
     @Activate
     public QingpingHandlerFactory(@Reference HttpClientFactory httpClientFactory,
@@ -51,8 +57,10 @@ public class QingpingHandlerFactory extends BaseThingHandlerFactory {
 
         final QingpingOAuthClientService qingpingOAuthClientService = oauthClientFactory.getInstance();
         final ObjectMapper mapper = new ObjectMapper();
-        this.qingpingHttpClient = new QingpingHttpClient(mapper, httpClientFactory.getCommonHttpClient(),
+        this.qingpingClient = new QingpingClient(mapper, httpClientFactory.getCommonHttpClient(),
                 qingpingOAuthClientService);
+        ScheduledExecutorService scheduledPool = ThreadPoolManager.getScheduledPool(SCHEDULED_POOL_NAME);
+        this.qingpingThingsStateUpdater = new QingpingThingsStateUpdater(qingpingClient, scheduledPool);
     }
 
     @Override
@@ -65,7 +73,7 @@ public class QingpingHandlerFactory extends BaseThingHandlerFactory {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
         if (THING_TYPE_AIR_MONITOR.equals(thingTypeUID)) {
-            return new AirMonitorHandler(thing, qingpingHttpClient);
+            return new AirMonitorHandler(thing, qingpingClient, qingpingThingsStateUpdater);
         }
 
         return null;

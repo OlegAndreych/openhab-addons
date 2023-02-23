@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Client to communicate with the Qingping cloud API.
  */
-public class QingpingHttpClient {
+public class QingpingClient {
     private static final String BASIC_URL = "https://apis.cleargrass.com";
     private static final String LIST_DEVICES_URL = BASIC_URL + "/v1/apis/devices";
 
@@ -26,7 +26,7 @@ public class QingpingHttpClient {
     private final HttpClient httpClient;
     private final QingpingOAuthClientService oAuthClientService;
 
-    public QingpingHttpClient(ObjectMapper objectMapper, HttpClient httpClient,
+    public QingpingClient(ObjectMapper objectMapper, HttpClient httpClient,
             QingpingOAuthClientService oAuthClientService) {
         this.objectMapper = objectMapper;
         this.httpClient = httpClient;

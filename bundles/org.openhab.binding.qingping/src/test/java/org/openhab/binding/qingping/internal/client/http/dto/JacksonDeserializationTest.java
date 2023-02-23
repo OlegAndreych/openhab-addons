@@ -34,9 +34,9 @@ public class JacksonDeserializationTest {
         }
 
         assertThat(deviceListResponse, notNullValue());
-        assertThat(deviceListResponse.getTotal(), equalTo(2));
+        assertThat(deviceListResponse.total(), equalTo(2));
 
-        final List<Device> devices = deviceListResponse.getDevices();
+        final List<Device> devices = deviceListResponse.devices();
         assertThat(devices, hasSize(2));
 
         assertDevice(devices.get(0), "582D3400C123", "Living-room Air Monitor", 1663522182L, 30, 60, 1671357161L,

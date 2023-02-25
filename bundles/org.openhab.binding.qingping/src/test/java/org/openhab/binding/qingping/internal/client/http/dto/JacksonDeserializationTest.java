@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.junit.jupiter.api.Test;
 import org.openhab.binding.qingping.internal.client.http.dto.device.list.Device;
 import org.openhab.binding.qingping.internal.client.http.dto.device.list.DeviceListResponse;
@@ -28,15 +29,15 @@ public class JacksonDeserializationTest {
     void shouldDeserializeDeviceListResponse() throws IOException {
 
         final DeviceListResponse deviceListResponse;
-        try (InputStream responseStream = getClass().getClassLoader()
-                .getResourceAsStream("device_list_response.json")) {
+        try (@SuppressWarnings("null")
+        InputStream responseStream = getClass().getClassLoader().getResourceAsStream("device_list_response.json")) {
             deviceListResponse = OBJECT_MAPPER.readValue(responseStream, DeviceListResponse.class);
         }
 
         assertThat(deviceListResponse, notNullValue());
         assertThat(deviceListResponse.total(), equalTo(2));
 
-        final List<Device> devices = deviceListResponse.devices();
+        final List<@NonNull Device> devices = deviceListResponse.devices();
         assertThat(devices, hasSize(2));
 
         assertDevice(devices.get(0), "582D3400C123", "Living-room Air Monitor", 1663522182L, 30, 60, 1671357161L,

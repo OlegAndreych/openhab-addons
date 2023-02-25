@@ -1,6 +1,6 @@
 package org.openhab.binding.qingping.internal.sync;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -37,16 +37,14 @@ class QingpingThingsStateUpdaterTest {
     private ArgumentCaptor<Runnable> runnableArgumentCaptor;
 
     @Test
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "null" })
     void should_register_state_handler_for_things() throws QingpingServiceInteractionException {
         // Creating test data
         when(scheduler.scheduleAtFixedRate(any(), anyLong(), anyLong(), any())).thenReturn(mock(ScheduledFuture.class));
 
         final String deviceMac1 = "DM1";
         final String deviceMac2 = "DM2";
-        @SuppressWarnings("DataFlowIssue")
         final Device device1 = new Device(new DeviceInfo(deviceMac1, null, null, null, 0, 0, null, null, null), null);
-        @SuppressWarnings("DataFlowIssue")
         final Device device2 = new Device(new DeviceInfo(deviceMac2, null, null, null, 0, 0, null, null, null), null);
         final List<Device> devices = List.of(device1, device2);
         when(qingpingClient.listDevices()).thenReturn(new DeviceListResponse(2, devices));

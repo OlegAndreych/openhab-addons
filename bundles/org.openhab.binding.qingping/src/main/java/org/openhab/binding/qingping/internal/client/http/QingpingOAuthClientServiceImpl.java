@@ -2,7 +2,6 @@ package org.openhab.binding.qingping.internal.client.http;
 
 import java.io.IOException;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.auth.client.oauth2.AccessTokenResponse;
 import org.openhab.core.auth.client.oauth2.OAuthClientService;
 import org.openhab.core.auth.client.oauth2.OAuthException;
@@ -29,7 +28,6 @@ public class QingpingOAuthClientServiceImpl implements QingpingOAuthClientServic
         }
     }
 
-    @NonNull
     private AccessTokenResponse getAccessTokenResponse() throws OAuthException, IOException, OAuthResponseException {
         AccessTokenResponse accessTokenResponse = oAuthClientService.getAccessTokenResponse();
         if (accessTokenResponse == null) {

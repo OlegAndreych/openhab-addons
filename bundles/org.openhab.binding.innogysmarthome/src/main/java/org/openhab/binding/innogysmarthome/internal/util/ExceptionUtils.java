@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.weathercompany.internal.util;
+package org.openhab.binding.innogysmarthome.internal.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.List;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * The {@link ExceptionUtils} class defines some static utility methods
+ * The {@link ExceptionUtils} class defines static Exception related methods
  *
  * @author Leo Siepel - Initial contribution
  */

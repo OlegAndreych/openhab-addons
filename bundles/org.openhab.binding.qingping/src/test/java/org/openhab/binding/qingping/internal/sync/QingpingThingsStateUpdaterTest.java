@@ -38,9 +38,10 @@ class QingpingThingsStateUpdaterTest {
 
     @Test
     @SuppressWarnings({ "unchecked", "null" })
-    void should_register_state_handler_for_things() throws QingpingServiceInteractionException {
+    void should_register_state_handler_for_things_and_deregister_it() throws QingpingServiceInteractionException {
         // Creating test data
-        when(scheduler.scheduleAtFixedRate(any(), anyLong(), anyLong(), any())).thenReturn(mock(ScheduledFuture.class));
+        final ScheduledFuture scheduledFuture = mock(ScheduledFuture.class);
+        when(scheduler.scheduleAtFixedRate(any(), anyLong(), anyLong(), any())).thenReturn(scheduledFuture);
 
         final String deviceMac1 = "DM1";
         final String deviceMac2 = "DM2";
@@ -55,9 +56,11 @@ class QingpingThingsStateUpdaterTest {
 
         // Checking state refresh action scheduling
         final Consumer<Device> consumer = mock(Consumer.class);
-        qingpingThingsStateUpdater.register(new SynchronizationRegistrationData(deviceMac1, consumer));
+        final Runnable registration1 = qingpingThingsStateUpdater
+                .register(new SynchronizationRegistrationData(deviceMac1, consumer));
         verify(scheduler).scheduleAtFixedRate(runnableArgumentCaptor.capture(), eq(0L), eq(30L), eq(TimeUnit.SECONDS));
-        qingpingThingsStateUpdater.register(new SynchronizationRegistrationData(deviceMac2, consumer));
+        final Runnable registration2 = qingpingThingsStateUpdater
+                .register(new SynchronizationRegistrationData(deviceMac2, consumer));
         verifyNoMoreInteractions(scheduler);
 
         // Checking consumer interaction during scheduled action execution
@@ -65,5 +68,10 @@ class QingpingThingsStateUpdaterTest {
         scheduledAction.run();
         verify(consumer).accept(device1);
         verify(consumer).accept(device2);
+
+        registration1.run();
+        registration2.run();
+
+        verify(scheduledFuture).cancel(false);
     }
 }

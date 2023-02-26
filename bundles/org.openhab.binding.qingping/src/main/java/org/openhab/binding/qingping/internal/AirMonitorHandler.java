@@ -43,7 +43,7 @@ public class AirMonitorHandler extends BaseThingHandler {
     private @Nullable QingpingConfiguration config;
     private final QingpingClient qingpingClient;
     private final QingpingThingsStateUpdater qingpingThingsStateUpdater;
-    private Runnable registrationHandle;
+    private @Nullable Runnable registrationHandle;
 
     public AirMonitorHandler(Thing thing, QingpingClient qingpingClient,
             QingpingThingsStateUpdater qingpingThingsStateUpdater) {
@@ -107,7 +107,9 @@ public class AirMonitorHandler extends BaseThingHandler {
 
     @Override
     public void dispose() {
-        registrationHandle.run();
+        if (registrationHandle != null) {
+            registrationHandle.run();
+        }
         super.dispose();
     }
 }

@@ -44,13 +44,21 @@ public class QingpingThingsStateUpdater {
             }
             // TODO: make meaningful interface for a registration handle.
             return () -> {
-                lock.writeLock().lock();
-                try {
-                    registrations.remove(deviceMac);
-                } finally {
-                    lock.writeLock().unlock();
-                }
+                unregister(deviceMac);
             };
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    private void unregister(String deviceMac) {
+        lock.writeLock().lock();
+        try {
+            registrations.remove(deviceMac);
+            if (registrations.isEmpty() && scheduledFuture != null) {
+                scheduledFuture.cancel(false);
+                scheduledFuture = null;
+            }
         } finally {
             lock.writeLock().unlock();
         }

@@ -3,6 +3,7 @@ package org.openhab.binding.qingping.internal.sync;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -40,6 +41,7 @@ class QingpingThingsStateUpdaterTest {
     @SuppressWarnings({ "unchecked", "null" })
     void should_register_state_handler_for_things_and_deregister_it() throws QingpingServiceInteractionException {
         // Creating test data
+        @SuppressWarnings("rawtypes")
         final ScheduledFuture scheduledFuture = mock(ScheduledFuture.class);
         when(scheduler.scheduleAtFixedRate(any(), anyLong(), anyLong(), any())).thenReturn(scheduledFuture);
 
@@ -55,22 +57,26 @@ class QingpingThingsStateUpdaterTest {
                 scheduler);
 
         // Checking state refresh action scheduling
-        final Consumer<Device> consumer = mock(Consumer.class);
-        final Runnable registration1 = qingpingThingsStateUpdater
-                .register(new SynchronizationRegistrationData(deviceMac1, consumer));
+        final Consumer<Device> singleDeviceConsumer = mock(Consumer.class);
+        final Runnable registration1 = qingpingThingsStateUpdater.subscribeForSingleDevice(deviceMac1,
+                singleDeviceConsumer);
         verify(scheduler).scheduleAtFixedRate(runnableArgumentCaptor.capture(), eq(0L), eq(30L), eq(TimeUnit.SECONDS));
-        final Runnable registration2 = qingpingThingsStateUpdater
-                .register(new SynchronizationRegistrationData(deviceMac2, consumer));
+        final Runnable registration2 = qingpingThingsStateUpdater.subscribeForSingleDevice(deviceMac2,
+                singleDeviceConsumer);
         verifyNoMoreInteractions(scheduler);
+        final Consumer<Collection<Device>> allDevicesConsumer = mock(Consumer.class);
+        final Runnable allSubscription = qingpingThingsStateUpdater.subscribeForAllDevices(allDevicesConsumer);
 
         // Checking consumer interaction during scheduled action execution
         final Runnable scheduledAction = runnableArgumentCaptor.getValue();
         scheduledAction.run();
-        verify(consumer).accept(device1);
-        verify(consumer).accept(device2);
+        verify(singleDeviceConsumer).accept(device1);
+        verify(singleDeviceConsumer).accept(device2);
+        verify(allDevicesConsumer).accept(devices);
 
         registration1.run();
         registration2.run();
+        allSubscription.run();
 
         verify(scheduledFuture).cancel(false);
     }

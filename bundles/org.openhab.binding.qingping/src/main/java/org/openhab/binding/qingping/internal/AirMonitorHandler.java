@@ -23,7 +23,6 @@ import org.openhab.binding.qingping.internal.client.http.QingpingClient;
 import org.openhab.binding.qingping.internal.client.http.dto.device.list.Device;
 import org.openhab.binding.qingping.internal.client.http.dto.device.list.data.DeviceData;
 import org.openhab.binding.qingping.internal.sync.QingpingThingsStateUpdater;
-import org.openhab.binding.qingping.internal.sync.SynchronizationRegistrationData;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.PercentType;
 import org.openhab.core.thing.ChannelUID;
@@ -89,8 +88,7 @@ public class AirMonitorHandler extends BaseThingHandler {
         final Map<String, String> properties = thing.getProperties();
         final String mac = properties.get(MAC_PROPERTY_NAME);
         requireNonNull(mac, "MAC property value must be present for an Air Monitor thing.");
-        registrationHandle = qingpingThingsStateUpdater
-                .register(new SynchronizationRegistrationData(mac, this::applyNewState));
+        registrationHandle = qingpingThingsStateUpdater.subscribeForSingleDevice(mac, this::applyNewState);
     }
 
     private void applyNewState(Device device) {

@@ -1,7 +1,11 @@
 package org.openhab.binding.qingping.internal.sync;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -21,7 +25,8 @@ import org.openhab.binding.qingping.internal.client.http.dto.device.list.DeviceL
  */
 public class QingpingThingsStateUpdater {
     private final QingpingClient qingpingClient;
-    private final Map<String, Consumer<Device>> registrations = new HashMap<>();
+    private final Map<String, Consumer<Device>> singleDeviceSubscriptions = new HashMap<>();
+    private final Set<Consumer<Collection<Device>>> allDevicesSubscriptions = new HashSet<>();
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     private final ScheduledExecutorService scheduler;
@@ -33,29 +38,65 @@ public class QingpingThingsStateUpdater {
         this.scheduler = scheduler;
     }
 
-    public Runnable register(SynchronizationRegistrationData synchronizationRegistrationData) {
+    /**
+     * Register callback for a device state updates.
+     *
+     * @param deviceMac MAC of the device for subscription;
+     * @param syncedDataConsumer callback for updates processing;
+     * @return handle to unsubscribe from updates.
+     */
+    public Runnable subscribeForSingleDevice(String deviceMac, Consumer<Device> syncedDataConsumer) {
         lock.writeLock().lock();
         try {
-            final String deviceMac = synchronizationRegistrationData.deviceMac();
-            registrations.put(deviceMac, synchronizationRegistrationData.syncedDataConsumer());
+            singleDeviceSubscriptions.put(deviceMac, syncedDataConsumer);
             if (scheduledFuture == null) {
                 // TODO: make period configurable.
                 scheduledFuture = scheduler.scheduleAtFixedRate(this::sync, 0, 30, TimeUnit.SECONDS);
             }
             // TODO: make meaningful interface for a registration handle.
             return () -> {
-                unregister(deviceMac);
+                unsubscribeSingleDevice(deviceMac);
             };
         } finally {
             lock.writeLock().unlock();
         }
     }
 
-    private void unregister(String deviceMac) {
+    private void unsubscribeSingleDevice(String deviceMac) {
         lock.writeLock().lock();
         try {
-            registrations.remove(deviceMac);
-            if (registrations.isEmpty() && scheduledFuture != null) {
+            singleDeviceSubscriptions.remove(deviceMac);
+            if (singleDeviceSubscriptions.isEmpty() && scheduledFuture != null) {
+                scheduledFuture.cancel(false);
+                scheduledFuture = null;
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public Runnable subscribeForAllDevices(Consumer<Collection<Device>> syncedDataConsumer) {
+        lock.writeLock().lock();
+        try {
+            allDevicesSubscriptions.add(syncedDataConsumer);
+            if (scheduledFuture == null) {
+                // TODO: make period configurable.
+                scheduledFuture = scheduler.scheduleAtFixedRate(this::sync, 0, 30, TimeUnit.SECONDS);
+            }
+            // TODO: make meaningful interface for a registration handle.
+            return () -> {
+                unsubscribeAllDevices(syncedDataConsumer);
+            };
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    private void unsubscribeAllDevices(Consumer<Collection<Device>> syncedDataConsumer) {
+        lock.writeLock().lock();
+        try {
+            allDevicesSubscriptions.remove(syncedDataConsumer);
+            if (singleDeviceSubscriptions.isEmpty() && scheduledFuture != null) {
                 scheduledFuture.cancel(false);
                 scheduledFuture = null;
             }
@@ -66,12 +107,13 @@ public class QingpingThingsStateUpdater {
 
     private void sync() {
         try {
-            final DeviceListResponse devices = qingpingClient.listDevices();
+            final DeviceListResponse devicesResponse = qingpingClient.listDevices();
             lock.readLock().lock();
             try {
-                for (Device device : devices.devices()) {
+                List<Device> devicesList = devicesResponse.devices();
+                for (Device device : devicesList) {
                     final String mac = device.getInfo().getMac();
-                    final Consumer<Device> deviceConsumer = registrations.get(mac);
+                    final Consumer<Device> deviceConsumer = singleDeviceSubscriptions.get(mac);
                     if (deviceConsumer != null) {
                         deviceConsumer.accept(device);
                     }

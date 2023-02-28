@@ -9,10 +9,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.DisplayNameGenerator;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -36,6 +33,12 @@ class QingpingThingsStateUpdaterTest {
     private ScheduledExecutorService scheduler;
     @Captor
     private ArgumentCaptor<Runnable> runnableArgumentCaptor;
+    private QingpingThingsStateUpdater qingpingThingsStateUpdater;
+
+    @BeforeEach
+    void setUp() {
+        qingpingThingsStateUpdater = new QingpingThingsStateUpdater(qingpingClient, scheduler);
+    }
 
     @Test
     @SuppressWarnings({ "unchecked", "null" })
@@ -47,14 +50,12 @@ class QingpingThingsStateUpdaterTest {
 
         final String deviceMac1 = "DM1";
         final String deviceMac2 = "DM2";
+        @SuppressWarnings("DataFlowIssue")
         final Device device1 = new Device(new DeviceInfo(deviceMac1, null, null, null, 0, 0, null, null, null), null);
+        @SuppressWarnings("DataFlowIssue")
         final Device device2 = new Device(new DeviceInfo(deviceMac2, null, null, null, 0, 0, null, null, null), null);
         final List<Device> devices = List.of(device1, device2);
         when(qingpingClient.listDevices()).thenReturn(new DeviceListResponse(2, devices));
-
-        // Creating object under test
-        final QingpingThingsStateUpdater qingpingThingsStateUpdater = new QingpingThingsStateUpdater(qingpingClient,
-                scheduler);
 
         // Checking state refresh action scheduling
         final Consumer<Device> singleDeviceConsumer = mock(Consumer.class);
@@ -79,5 +80,54 @@ class QingpingThingsStateUpdaterTest {
         allSubscription.run();
 
         verify(scheduledFuture).cancel(false);
+    }
+
+    @Test
+    void should_not_stop_syncing_when_only_single_device_subscription_is_present() {
+        // Prepare test data
+        @SuppressWarnings("rawtypes")
+        final ScheduledFuture scheduledFuture = mock(ScheduledFuture.class);
+        // noinspection unchecked
+        when(scheduler.scheduleAtFixedRate(any(), anyLong(), anyLong(), any())).thenReturn(scheduledFuture);
+
+        // Subsribing
+        @SuppressWarnings("unchecked")
+        final Consumer<Device> singleDeviceConsumer = mock(Consumer.class);
+        qingpingThingsStateUpdater.subscribeForSingleDevice("anyMac", singleDeviceConsumer);
+
+        @SuppressWarnings("unchecked")
+        final Consumer<Collection<Device>> allDevicesConsumer = mock(Consumer.class);
+        final Runnable allSubscription = qingpingThingsStateUpdater.subscribeForAllDevices(allDevicesConsumer);
+
+        // Unsubscribing
+        allSubscription.run();
+
+        // Verification
+        verify(scheduledFuture, never()).cancel(false);
+    }
+
+    @Test
+    void should_not_stop_syncing_when_only_all_devices_subscription_is_present() {
+        // Prepare test data
+        @SuppressWarnings("rawtypes")
+        final ScheduledFuture scheduledFuture = mock(ScheduledFuture.class);
+        // noinspection unchecked
+        when(scheduler.scheduleAtFixedRate(any(), anyLong(), anyLong(), any())).thenReturn(scheduledFuture);
+
+        // Subsribing
+        @SuppressWarnings("unchecked")
+        final Consumer<Device> singleDeviceConsumer = mock(Consumer.class);
+        final Runnable singleDeviceSubscription = qingpingThingsStateUpdater.subscribeForSingleDevice("anyMac",
+                singleDeviceConsumer);
+
+        @SuppressWarnings("unchecked")
+        final Consumer<Collection<Device>> allDevicesConsumer = mock(Consumer.class);
+        qingpingThingsStateUpdater.subscribeForAllDevices(allDevicesConsumer);
+
+        // Unsubscribing
+        singleDeviceSubscription.run();
+
+        // Verification
+        verify(scheduledFuture, never()).cancel(false);
     }
 }

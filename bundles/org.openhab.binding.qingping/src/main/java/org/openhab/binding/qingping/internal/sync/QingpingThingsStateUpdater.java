@@ -1,11 +1,6 @@
 package org.openhab.binding.qingping.internal.sync;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -54,9 +49,7 @@ public class QingpingThingsStateUpdater {
                 scheduledFuture = scheduler.scheduleAtFixedRate(this::sync, 0, 30, TimeUnit.SECONDS);
             }
             // TODO: make meaningful interface for a registration handle.
-            return () -> {
-                unsubscribeSingleDevice(deviceMac);
-            };
+            return () -> unsubscribeSingleDevice(deviceMac);
         } finally {
             lock.writeLock().unlock();
         }
@@ -66,10 +59,7 @@ public class QingpingThingsStateUpdater {
         lock.writeLock().lock();
         try {
             singleDeviceSubscriptions.remove(deviceMac);
-            if (singleDeviceSubscriptions.isEmpty() && scheduledFuture != null) {
-                scheduledFuture.cancel(false);
-                scheduledFuture = null;
-            }
+            unscheduleSyncIfNecessary();
         } finally {
             lock.writeLock().unlock();
         }
@@ -84,9 +74,7 @@ public class QingpingThingsStateUpdater {
                 scheduledFuture = scheduler.scheduleAtFixedRate(this::sync, 0, 30, TimeUnit.SECONDS);
             }
             // TODO: make meaningful interface for a registration handle.
-            return () -> {
-                unsubscribeAllDevices(syncedDataConsumer);
-            };
+            return () -> unsubscribeAllDevices(syncedDataConsumer);
         } finally {
             lock.writeLock().unlock();
         }
@@ -96,12 +84,16 @@ public class QingpingThingsStateUpdater {
         lock.writeLock().lock();
         try {
             allDevicesSubscriptions.remove(syncedDataConsumer);
-            if (singleDeviceSubscriptions.isEmpty() && scheduledFuture != null) {
-                scheduledFuture.cancel(false);
-                scheduledFuture = null;
-            }
+            unscheduleSyncIfNecessary();
         } finally {
             lock.writeLock().unlock();
+        }
+    }
+
+    private void unscheduleSyncIfNecessary() {
+        if (singleDeviceSubscriptions.isEmpty() && allDevicesSubscriptions.isEmpty() && scheduledFuture != null) {
+            scheduledFuture.cancel(false);
+            scheduledFuture = null;
         }
     }
 
@@ -111,6 +103,9 @@ public class QingpingThingsStateUpdater {
             lock.readLock().lock();
             try {
                 List<Device> devicesList = devicesResponse.devices();
+                for (Consumer<Collection<Device>> allDevicesSubscription : allDevicesSubscriptions) {
+                    allDevicesSubscription.accept(devicesList);
+                }
                 for (Device device : devicesList) {
                     final String mac = device.getInfo().getMac();
                     final Consumer<Device> deviceConsumer = singleDeviceSubscriptions.get(mac);
